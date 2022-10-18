@@ -30,14 +30,14 @@ USE WideWorldImporters
 Продажи смотреть в таблице Sales.Invoices и связанных таблицах.
 */
 
-select year( i.InvoiceDate) as [year], format(i.InvoiceDate,'MMMM') as [month],ol.Description, avg(ol.unitPrice)as [AVG_price],
-sum(ol.unitPrice *ol.Quantity) as 'сумма продаж за месяц'
+select year( i.InvoiceDate) as [year]
+	,format(i.InvoiceDate,'MMMM') as [month]
+	,avg(il.unitPrice)as [AVG_price]
+	,sum(il.unitPrice *il.Quantity) as 'monthly sales'
 from Sales.Invoices i 
-	inner join [Sales].[OrderLines] ol
-on ol.OrderID = i.OrderID
-GROUP BY year(i.InvoiceDate),format(i.InvoiceDate,'MMMM'), Description
-
-
+	inner join sales.invoicelines il
+on il.InvoiceID = i.InvoiceID
+GROUP BY year(i.InvoiceDate),format(i.InvoiceDate,'MMMM')
 
 
 /*
@@ -51,12 +51,14 @@ GROUP BY year(i.InvoiceDate),format(i.InvoiceDate,'MMMM'), Description
 Продажи смотреть в таблице Sales.Invoices и связанных таблицах.
 */
 
-select  year( i.InvoiceDate) as [year], format(i.InvoiceDate,'MMMM') as [month], sum(ol.unitprice* ol.Quantity) as 'Общая сумма продаж'
+select  year( i.InvoiceDate) as [year]
+	,format(i.InvoiceDate,'MMMM') as [month]
+	,sum(il.unitprice* il.Quantity) as 'Total sales'
 from Sales.Invoices i
-	join [Sales].[OrderLines] ol
-on ol.OrderID = i.OrderID
+	join sales.invoicelines il
+on il.InvoiceID = i.InvoiceID
 group by year( i.InvoiceDate), format(i.InvoiceDate,'MMMM')
-having sum(ol.unitprice* ol.Quantity) > 4600000
+having sum(il.unitprice* il.Quantity) > 4600000
 
 /*
 3. Вывести сумму продаж, дату первой продажи
@@ -75,15 +77,22 @@ having sum(ol.unitprice* ol.Quantity) > 4600000
 Продажи смотреть в таблице Sales.Invoices и связанных таблицах.
 */
 
-select year( i.InvoiceDate) as [year], format(i.InvoiceDate,'MMMM') as [month],ol.Description, 
-sum(ol.unitPrice *ol.Quantity) as 'сумма продаж за месяц', min(i.invoiceDate) 'дата первой продажи',  sum(ol.Quantity) 'кол-во проданного'
-from Sales.Invoices i 
-	inner join [Sales].[OrderLines] ol
-on ol.OrderID = i.OrderID
-GROUP BY year(i.InvoiceDate),format(i.InvoiceDate,'MMMM'), Description, ol.Quantity
-having sum(ol.Quantity) < 50
+select year( i.InvoiceDate) as [year]
+	, format(i.InvoiceDate,'MMMM') as [month]
+	,il.Description
+	,sum(il.unitPrice * il.Quantity) as 'monthly sales'
+	,min(i.invoiceDate) 'date of first sale'
+	,sum(il.Quantity) 'quantity sold'
+from Sales.Invoices i
+	join sales.invoicelines il
+on il.InvoiceID = i.InvoiceID
+GROUP BY year(i.InvoiceDate),format(i.InvoiceDate,'MMMM'), Description, il.Quantity
+having sum(il.Quantity) < 50
 
-
+select *
+from Sales.Invoices i
+	join sales.invoicelines il
+on il.InvoiceID = i.InvoiceID
 
 -- ---------------------------------------------------------------------------
 -- Опционально
